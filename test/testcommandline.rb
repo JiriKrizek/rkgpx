@@ -5,8 +5,12 @@ class TestCommandLine < Test::Unit::TestCase
 	@@test_exit=[
       "--help",
       "-help",
+      "-h kk",
+      "-H kk",
       "",
       "kk --help",
+      "kk --HELP",
+      "kk --Help",
       "kk -a kk -i",
       "kk -i -a kk",
       "kk -i -i",
@@ -37,6 +41,8 @@ class TestCommandLine < Test::Unit::TestCase
       "kk aa bb" => 'Arguments: kk aa bb; files.count: 3; output_dir: ; edit_in_place: false; ',
       "-i kk aa bb" => 'Arguments: -i kk aa bb; files.count: 3; output_dir: ; edit_in_place: true; ',
       "-a kk aa bb" => 'Arguments: -a kk aa bb; files.count: 2; output_dir: kk; edit_in_place: false; ',
+      "-he kk" => 'Arguments: -he kk; files.count: 1; output_dir: ; edit_in_place: false; ',
+      "-ehelp kk" => 'Arguments: -ehelp kk; files.count: 1; output_dir: ; edit_in_place: false; ',
     }
 
     test_input.each { |key, value|

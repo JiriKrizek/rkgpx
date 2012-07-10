@@ -1,9 +1,6 @@
 
 class Commandline
-	HELP_STRING="help"
-
   def initialize(given_arguments)
-    puts "given_arguments: #{given_arguments}"
     @arguments = given_arguments
 
     @edit_in_place=false
@@ -71,7 +68,7 @@ class Commandline
       end
     end
 
-    if argument.end_with?(HELP_STRING)
+    if argument =~ /^-*h+(elp)*$/i
       print_help
     end
 
