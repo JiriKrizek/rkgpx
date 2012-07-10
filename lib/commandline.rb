@@ -14,42 +14,45 @@ class Commandline
     end
 
     def to_s
-      strs="Arguments: "+@arguments.join(" ")+"; "
-      strs+="files.count: #{@files.count}; "
-      strs+="output_dir: #{@output_dir}; "
-      strs+="edit_in_place: #{@edit_in_place}; "
+      object_status="Arguments: "+@arguments.join(" ")+"; "
+      object_status+="files.count: #{@files.count}; "
+      object_status+="output_dir: #{@output_dir}; "
+      object_status+="edit_in_place: #{@edit_in_place}; "
     end
 
     def parse
-      @arguments.each { |a|
-        if a.start_with?("-")
-          parse_switch a
+      # Process all arguments
+      @arguments.each do |arg|
+        if arg.start_with?("-")
+          parse_switch arg
         else
-          parse_arg a
+          parse_arg arg
         end
-      }
+      end
 
+      # Check validity of arguments
       if @files.count == 0
         puts "ERROR: No input files specified."
         print_help
       end
 
       if (@expecting_dir == true && @output_dir.nil?)
-        puts "ERROR: Expecting argument for '-a' switch"
+        puts "ERROR: Expecting argument for '-o' switch"
         print_help
       end
 
       if @edit_in_place && @output_dir
-          puts "Could not use both '-i' and '-a' switch.\n"
-          print_help
+        puts "Could not use both '-i' and '-o' switch.\n"
+        print_help
       end
     end
 
   private
-
+    # Parse switch argument and set relevant flag variable
     def parse_switch(arg)
       argument = arg[1..-1].downcase
 
+      # In place
       if argument.eql?("i")
         if ( @edit_in_place || @expecting_dir )
           puts "Invalid usage of '-i' switch."
@@ -60,35 +63,33 @@ class Commandline
         end
       end
 
-      if argument.eql?("a")
-        puts "arg eql a"
-
+      # Argument outputdir
+      if argument.eql?("o")
         if @expecting_dir==false
           @expecting_dir=true
         else
-          puts "Argument DIR expected after '-a' switch\n"
+          puts "Argument DIR expected after '-o' switch\n"
           print_help
         end
       end
 
+      # Arguments -H, -h, --help, -help...
       if argument =~ /^-*h+(elp)*$/i
         print_help
       end
-
-      puts "Switch: #{argument}"
     end
 
+    # Parse argument
     def parse_arg(arg)
       if @expecting_dir
         @output_dir=arg
         @expecting_dir=false
-
-        puts "Dir: #{@output_dir}"
       else
         @files << arg unless arg.empty?
       end
     end
 
+    # Print usage and exits program
     def print_help
       puts "Usage:
       \t./#{$PROGRAM_NAME} file.gpx [file2.gpx ...] -i|-o DIR|--help\n
