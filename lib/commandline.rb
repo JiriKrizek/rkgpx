@@ -1,5 +1,8 @@
 
+# Parse commandline arguments and prepare files.
 class Commandline
+  attr_reader :edit_in_place, :output_dir, :files
+
   public
     def initialize(given_arguments)
       @arguments = given_arguments
@@ -45,6 +48,13 @@ class Commandline
         puts "Could not use both '-i' and '-o' switch.\n"
         print_help
       end
+
+      filter_invalid_files
+
+      # Create directory if not already exist
+      if @files.size
+        create_dir(@output_dir) if @output_dir
+      end
     end
 
   private
@@ -63,7 +73,7 @@ class Commandline
         end
       end
 
-      # Argument outputdir
+      # Argument output_dir
       if argument.eql?("o")
         if @expecting_dir==false
           @expecting_dir=true
@@ -99,5 +109,34 @@ class Commandline
       \t\t-o DIR\t - put output files to directory DIR
       \t\t--help\t - print usage"
       exit 1
+    end
+
+    # Remove non existing files and notify users
+    def filter_invalid_files
+      real_files=[]
+      @files.each do |file|
+        if @edit_in_place
+          if File.writable?(file)
+            real_files << file 
+          else
+            puts "ERROR: File #{file} is not writable, ignoring."
+          end
+        else
+          if File.readable?(file)
+            real_files << file 
+          else
+            puts "ERROR: File #{file} is not readable, ignoring."
+          end
+        end
+      end
+      @files=real_files
+    end
+
+    def create_dir(dir)
+      begin
+        Dir.mkdir(dir)
+      rescue
+        # do nothing
+      end
     end
 end
