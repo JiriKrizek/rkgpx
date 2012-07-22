@@ -7,12 +7,12 @@ class GpxMerged
       @log = logger
 
       @files=files
-      @files = ["1.gpx", "error", "2.gpx"]
       @files.each { |file|
         if File.readable?(file)
           gpx = Gpx.new(file, @log)
-          gpx.fix_trkseg
-          gpx.save_in_place
+          puts gpx.fix_trkseg
+          #dont save for now TODO
+          #gpx.save_in_place
         else
           log.info "File #{file} is not readable or does not exist. Skipping."
         end
