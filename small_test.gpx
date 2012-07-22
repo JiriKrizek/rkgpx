@@ -11,10 +11,8 @@
   <time>2012-07-08T20:31:40Z</time>
 <trkseg> 
 <trkpt lat="50.143693000" lon="14.018661000"><ele>377.3</ele><time>2012-07-08T20:31:40Z</time></trkpt>
-</trkseg>
 <trkseg>
 <trkpt lat="50.143699000" lon="14.018672000"><ele>377.4</ele><time>2012-07-08T20:32:43Z</time></trkpt>
 <trkpt lat="50.143784000" lon="14.018592000"><ele>378.0</ele><time>2012-07-08T20:32:44Z</time></trkpt>
-</trkseg>
 </trk>
 </gpx>
