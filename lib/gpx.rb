@@ -30,6 +30,7 @@ class Gpx
 
       # Surround trkseg tag with \n
       @contents = @contents.gsub(/<trkseg>/, "\n"+'\0'+"\n")
+      @contents = @contents.gsub(/<\/trk>/, "\n"+'\0'+"\n")
 
       @contents.each_line { |l|
         tag=l.strip
@@ -40,21 +41,30 @@ class Gpx
             output+="</trkseg>\n"
           end
           in_trk_seg = true
-        elsif tag =~ /^<\/trkseg>$/
+        elsif tag =~ /<\/trkseg>/
           in_trk_seg = false
         end
 
         # Close trkseg tag before </trk>
-        if tag =~ /^<\/trk>$/
+        if in_trk_seg && tag =~ /<\/trk>/ 
           output+="</trkseg>\n"
         end
 
         output+=l
       }
 
+      # Close gpx tag at the end of the document
+      output += "</gpx>" unless output.split("\n").last =~ /.*<\/gpx>\s*/
+
       # Tidy XML output
       doc = Nokogiri::XML(output)
+
       @contents = doc.to_xml
+
+      unless doc.errors.empty?
+        @log.warn("Encountered problems during XML parsing. Output XML file might not be valid.")
+        @log.warn(doc.errors.to_s)
+      end
     end
 
     def save_in_place
