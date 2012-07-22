@@ -19,17 +19,25 @@ class Gpx
     end
     
     def fix_trkseg
-      in_trkseg = false
-      in_tag = false
+      output = String.new
 
-      val = String.new
-      @contents.each_char { |ch|
-        val += ch
-        if ch == ">"
-          p val
-          val = '' 
+      in_trk_seg = false
+      @contents.each_line { |l|
+        tag=l.strip
+
+        if tag =~ /^<trkseg>$/
+          if in_trk_seg
+            output+="</trkseg>\n"
+          end
+          in_trk_seg = true
+        elsif tag =~ /^<\/trkseg>$/
+          in_trk_seg = false
         end
+
+        output+=l
       }
+      @contents=output
+      output
     end
 
     def save_in_place
