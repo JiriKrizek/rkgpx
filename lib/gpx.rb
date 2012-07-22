@@ -1,7 +1,8 @@
 #require 'nokogiri'
 
 class Gpx
-    
+    attr_reader :contents
+
     def initialize(filename, logger)
       @log = logger
       if File.readable?(filename)
@@ -37,7 +38,6 @@ class Gpx
         output+=l
       }
       @contents=output
-      output
     end
 
     def save_in_place

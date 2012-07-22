@@ -10,7 +10,10 @@ class GpxMerged
       @files.each { |file|
         if File.readable?(file)
           gpx = Gpx.new(file, @log)
-          puts gpx.fix_trkseg
+          gpx.fix_trkseg
+
+          @log.info "XML: \n#{gpx.contents}"
+
           #dont save for now TODO
           #gpx.save_in_place
         else
