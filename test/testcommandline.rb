@@ -1,4 +1,4 @@
-require "../lib/commandline.rb"
+require_relative "../lib/commandline.rb"
 require "test/unit"
 
 class TestCommandLine < Test::Unit::TestCase
