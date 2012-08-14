@@ -122,7 +122,6 @@ class Commandline
       version_file="lib/version.rb"
 
       if File.exist?(version_file)
-        puts "File exists"
         require_relative "version.rb"
         version=get_version
       end
