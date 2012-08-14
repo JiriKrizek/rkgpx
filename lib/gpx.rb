@@ -64,7 +64,8 @@ class Gpx
     unless doc.errors.empty?
       @log.warn("Encountered problems during XML parsing. Output XML file might not be valid.")
       @log.warn(doc.errors.end)
-    to_s
+      to_s
+    end
   end
 
   def save_in_place
