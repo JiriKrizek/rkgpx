@@ -62,6 +62,11 @@ class Commandline
     def parse_switch(arg)
       argument = arg[1..-1].downcase
 
+      # Version
+      if argument =~ /^(v|-version)$/
+        print_version
+      end
+
       # In place
       if argument.eql?("i")
         if ( @edit_in_place || @expecting_dir )
@@ -87,6 +92,7 @@ class Commandline
       if argument =~ /^-*h+(elp)*$/i
         print_help
       end
+
     end
 
     # Parse argument
@@ -108,6 +114,17 @@ class Commandline
       \t\t-i\t - fix files 'in place'
       \t\t-o DIR\t - put output files to directory DIR
       \t\t--help\t - print usage"
+      exit 1
+    end
+
+    # Print version and exits program
+    def print_version
+      version="unknown"
+      version_file="../version.rb"
+
+      require_relative version_file if File.exist?(version_file)
+
+      puts "Version: #{version}\n"
       exit 1
     end
 
