@@ -126,9 +126,8 @@ class Commandline
         version=get_version
       end
 
-
       puts "Version: #{version}\n"
-      exit 1
+      exit 2
     end
 
     # Remove non existing files and notify users

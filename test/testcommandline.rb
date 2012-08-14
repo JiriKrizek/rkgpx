@@ -1,5 +1,6 @@
 require_relative "../lib/commandline.rb"
 require "test/unit"
+require "fileutils"
 
 class TestCommandLine < Test::Unit::TestCase
   @@test_exit=[
@@ -17,8 +18,21 @@ class TestCommandLine < Test::Unit::TestCase
       "kk -o"
     ]
 
+  @@test_version=[
+    "-V",
+    "--version"
+  ]
+
   def test_help_exit_raises
     @@test_exit.each { |a|
+      assert_raise(SystemExit, "SystemExit expected for \"#{a}\"") {
+        Commandline.new(a.split(' ')).parse
+      }
+    }
+  end
+
+  def test_version_exit_raises
+    @@test_version.each { |a|
       assert_raise(SystemExit, "SystemExit expected for \"#{a}\"") {
         Commandline.new(a.split(' ')).parse
       }
@@ -35,7 +49,21 @@ class TestCommandLine < Test::Unit::TestCase
     }
   end
 
+  def test_version_exit_status
+    @@test_version.each { |a|
+      begin
+        Commandline.new([a]).parse
+      rescue SystemExit => e
+        assert e.status == 2
+      end
+    }
+  end
+
   def test_files_input
+    arr=["kk", "aa", "bb", "cc"]
+
+    arr.each { |f| FileUtils.touch(f) }
+
     test_input = {
       "kk aa bb cc" => 'Arguments: kk aa bb cc; files.count: 4; output_dir: ; edit_in_place: false; ',
       "kk aa bb" => 'Arguments: kk aa bb; files.count: 3; output_dir: ; edit_in_place: false; ',
@@ -50,6 +78,8 @@ class TestCommandLine < Test::Unit::TestCase
       cmd.parse
       assert_equal(cmd.to_s, value)
     }
+
+    arr.each {|f| File.delete(f) }
 
   end
 end
