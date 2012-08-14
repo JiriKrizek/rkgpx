@@ -2,7 +2,9 @@ require_relative "../lib/commandline.rb"
 require "test/unit"
 require "fileutils"
 
+# Test command line arguments behaviour
 class TestCommandLine < Test::Unit::TestCase
+  # These arguments should result in exit with 1 exit status
   @@test_exit=[
       "--help",
       "-help",
@@ -18,6 +20,7 @@ class TestCommandLine < Test::Unit::TestCase
       "kk -o"
     ]
 
+  # These arguments should result in exit with 2 exit status (version)
   @@test_version=[
     "-V",
     "--version"
@@ -62,6 +65,7 @@ class TestCommandLine < Test::Unit::TestCase
   def test_files_input
     arr=["kk", "aa", "bb", "cc"]
 
+    # Simulate existing files
     arr.each { |f| FileUtils.touch(f) }
 
     test_input = {
@@ -79,6 +83,7 @@ class TestCommandLine < Test::Unit::TestCase
       assert_equal(cmd.to_s, value)
     }
 
+    # Delete dummy existing files
     arr.each {|f| File.delete(f) }
 
   end
