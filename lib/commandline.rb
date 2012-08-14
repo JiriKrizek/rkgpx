@@ -119,11 +119,11 @@ class Commandline
     # Print version and exits program
     def print_version
       version="unknown"
-      version_file="version.rb"
+      version_file="lib/version.rb"
 
       if File.exist?(version_file)
         puts "File exists"
-        require_relative "../version.rb"
+        require_relative "version.rb"
         version=get_version
       end
 
