@@ -1,5 +1,3 @@
-#require 'nokogiri'
-
 class GpxMerged
     attr_accessor :log
 
