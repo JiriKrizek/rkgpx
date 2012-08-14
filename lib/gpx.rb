@@ -1,78 +1,77 @@
 require 'nokogiri'
 
 class Gpx
-    attr_reader :contents
+  attr_reader :contents
 
-    def initialize(filename, logger)
-      @log = logger
-      if File.readable?(filename)
-        file = File.open(filename, "r")
-        @filename = filename # TOREMOVE
-        
-        @contents = file.read
-        @log.debug("File #{filename} is readable, loading into string")
-      else
-        error = "File '#{filename}' is NOT READABLE."
+  def initialize(filename, logger)
+    @log = logger
+    if File.readable?(filename)
+      file = File.open(filename, "r")
+      @filename = filename # TOREMOVE
 
-        @log.warn(error)
-        raise ArgumentError.new(error)
-      end
+      @contents = file.read
+      @log.debug("File #{filename} is readable, loading into string")
+    else
+      error = "File '#{filename}' is NOT READABLE."
+
+      @log.warn(error)
+      raise ArgumentError.new(error)
     end
-    
-    def fix_trkseg
-      output = String.new
+  end
 
-      in_trk_seg = false
+  def fix_trkseg
+    output = String.new
 
-      # Remove end of lines
-      @contents.gsub!(/\r/, "")
-      @contents.gsub!(/\n/, "")
+    in_trk_seg = false
 
-      # Surround trkseg tag with \n
-      @contents = @contents.gsub(/<trkseg>/, "\n"+'\0'+"\n")
-      @contents = @contents.gsub(/<\/trk>/, "\n"+'\0'+"\n")
+    # Remove end of lines
+    @contents.gsub!(/\r/, "")
+    @contents.gsub!(/\n/, "")
 
-      @contents.each_line { |l|
-        tag=l.strip
+    # Surround trkseg tag with \n
+    @contents = @contents.gsub(/<trkseg>/, "\n"+'\0'+"\n")
+    @contents = @contents.gsub(/<\/trk>/, "\n"+'\0'+"\n")
 
-        if tag =~ /^<trkseg>$/
-          # Close trkseg tag before another <trkseg>
-          if in_trk_seg
-            output+="</trkseg>\n"
-          end
-          in_trk_seg = true
-        elsif tag =~ /<\/trkseg>/
-          in_trk_seg = false
-        end
+    @contents.each_line { |l|
+      tag=l.strip
 
-        # Close trkseg tag before </trk>
-        if in_trk_seg && tag =~ /<\/trk>/ 
+      if tag =~ /^<trkseg>$/
+        # Close trkseg tag before another <trkseg>
+        if in_trk_seg
           output+="</trkseg>\n"
         end
+        in_trk_seg = true
+      elsif tag =~ /<\/trkseg>/
+        in_trk_seg = false
+      end
 
-        output+=l
-      }
+      # Close trkseg tag before </trk>
+      if in_trk_seg && tag =~ /<\/trk>/ 
+        output+="</trkseg>\n"
+      end
 
-      # Close gpx tag at the end of the document
-      output += "</gpx>" unless output.split("\n").last =~ /.*<\/gpx>\s*/
+      output+=l
+    }
 
-      # Tidy XML output
-      doc = Nokogiri::XML(output)
+    # Close gpx tag at the end of the document
+    output += "</gpx>" unless output.split("\n").last =~ /.*<\/gpx>\s*/
 
-      @contents = doc.to_xml
+    # Tidy XML output
+    doc = Nokogiri::XML(output)
 
-      unless doc.errors.empty?
-        @log.warn("Encountered problems during XML parsing. Output XML file might not be valid.")
-        @log.warn(doc.errors.end)
-      to_s
-    end
+    @contents = doc.to_xml
 
-    def save_in_place
-      @log.fatal "Invalid operation! TO REMOVE"
-      fd = IO.sysopen "kk", "w"
-      iostream = IO.new(fd, "w")
-      iostream.puts @contents
-      iostream.close
-    end
-    
+    unless doc.errors.empty?
+      @log.warn("Encountered problems during XML parsing. Output XML file might not be valid.")
+      @log.warn(doc.errors.end)
+    to_s
+  end
+
+  def save_in_place
+    @log.fatal "Invalid operation! TO REMOVE"
+    fd = IO.sysopen "kk", "w"
+    iostream = IO.new(fd, "w")
+    iostream.puts @contents
+    iostream.close
+  end
 end
