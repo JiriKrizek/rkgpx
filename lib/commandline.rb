@@ -1,4 +1,3 @@
-
 # Parse commandline arguments and prepare files.
 class Commandline
   attr_reader :edit_in_place, :output_dir, :files
@@ -120,9 +119,14 @@ class Commandline
     # Print version and exits program
     def print_version
       version="unknown"
-      version_file="../version.rb"
+      version_file="version.rb"
 
-      require_relative version_file if File.exist?(version_file)
+      if File.exist?(version_file)
+        puts "File exists"
+        require_relative "../version.rb"
+        version=get_version
+      end
+
 
       puts "Version: #{version}\n"
       exit 1
