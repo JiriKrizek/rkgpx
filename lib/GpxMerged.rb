@@ -24,7 +24,7 @@ class GpxMerged
           gpx = Gpx.new(file, @log)
           gpx.fix_trkseg
 
-          @log.info "XML: \n#{gpx.contents}"
+          @log.info "Fixed trkseg for file '#{gpx.filename}'"
 
           #dont save for now TODO
           #gpx.save_in_place

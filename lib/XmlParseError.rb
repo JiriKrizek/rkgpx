@@ -1,0 +1,3 @@
+class XmlParseError < StandardError
+  
+end

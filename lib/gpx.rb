@@ -1,10 +1,13 @@
 require 'nokogiri'
+require_relative 'XmlParseError'
 
 class Gpx
-  attr_reader :contents
+  attr_reader :contents, :filename
 
   def initialize(filename, logger)
     @log = logger
+    @filename = filename
+
     if File.readable?(filename)
       file = File.open(filename, "r")
       @filename = filename # TOREMOVE
@@ -62,9 +65,8 @@ class Gpx
     @contents = doc.to_xml
 
     unless doc.errors.empty?
-      @log.warn("Encountered problems during XML parsing. Output XML file might not be valid.")
-      @log.warn(doc.errors.end)
-      to_s
+      msg = String.new "Encountered problems during XML parsing. Output XML file might not be valid.\n #{doc.errors.last}"
+      raise XmlParseError.new(msg)
     end
   end
 
