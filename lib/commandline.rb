@@ -69,10 +69,8 @@ class Commandline
       # In place
       if argument.eql?("i")
         if ( @edit_in_place || @expecting_dir )
-          puts "Invalid usage of '-i' switch."
           print_help
         else
-          puts "arg eql i"
           @edit_in_place=true
         end
       end
