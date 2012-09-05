@@ -22,7 +22,12 @@ class GpxMerged
       @files.each { |file|
         if File.readable?(file)
           gpx = Gpx.new(file, @log)
-          gpx.fix_trkseg
+
+          begin
+            gpx.fix_trkseg
+          rescue XmlParseError => e
+            @log.warning e.message
+          end
 
           @log.info "Fixed trkseg for file '#{gpx.filename}'"
 
