@@ -26,10 +26,8 @@ class GpxMerged
           begin
             gpx.fix_trkseg
           rescue XmlParseError => e
-            @log.warning e.message
+            @log.warn "Fixed trkseg for file '#{gpx.filename}' with error #{e.message}"
           end
-
-          @log.info "Fixed trkseg for file '#{gpx.filename}'"
 
           #dont save for now TODO
           #gpx.save_in_place

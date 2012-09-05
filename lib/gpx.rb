@@ -68,6 +68,8 @@ class Gpx
       msg = String.new "Encountered problems during XML parsing. Output XML file might not be valid.\n #{doc.errors.last}"
       raise XmlParseError.new(msg)
     end
+
+    @log.info "Fixed trkseg for file '#{filename}'"
   end
 
   def save_in_place
