@@ -2,7 +2,7 @@ require 'nokogiri'
 require_relative 'XmlParseError'
 
 class Gpx
-  attr_reader :contents, :filename
+  attr_reader :contents, :filename, :xml_doc
 
   def initialize(filename, logger)
     @log = logger
@@ -70,6 +70,7 @@ class Gpx
     end
 
     @log.info "Fixed trkseg for file '#{filename}'"
+    @xml_doc = doc
   end
 
   def save_in_place
@@ -79,4 +80,31 @@ class Gpx
     iostream.puts @contents
     iostream.close
   end
+
+  def get_gpx_type
+    return @gpx_type unless @type==nil
+    trk_name
+
+    @gpx_type
+  end
+
+  def get_gpx_date
+    return @gpx_date unless @type==nil
+    trk_name
+
+    @gpx_date
+  end
+private
+  def trk_name
+    txt = @xml_doc.xpath("/g:gpx/g:trk/g:name/text()", "g" => "http://www.topografix.com/GPX/1/1").to_s
+
+    txt.scan(/\<\!\[CDATA\[([a-zA-Z]*)\w*(.*)\]\]>/) do |type, time|
+      @gpx_type = type
+      @log.debug "GPX type: #{@gpx_type}"
+      @gpx_date = time
+      @log.debug "GPX date: #{@gpx_date}"
+    end
+  end
+
+
 end
