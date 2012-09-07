@@ -76,6 +76,32 @@ class Gpx
     @xml_doc = doc
   end
 
+  def fix_timestamps
+    offset = gpx_time_offset_hours
+
+    @xml_doc.xpath("/g:gpx/g:trk/g:time/text()", GPX_MAPPING).each { |node| 
+      node=fix_timestamp(node, offset)
+    }
+
+    @xml_doc.xpath("/g:gpx/g:trk/g:trkseg/g:trkpt/g:time/text()", GPX_MAPPING).each {|node|
+      node=fix_timestamp(node, offset)
+    }
+  end
+
+  def fix_timestamp(node, offset)
+    p node.class
+    raise ArgumentError.new("Node must be Nokogiri::XML::Text") unless node.kind_of? Nokogiri::XML::Text
+    raise ArgumentError.new("Offset must be number between 0-24") unless (offset>=0 && offset<=24)
+
+    time = node.content+" UTC"
+    off_time = Time.parse(time) - (offset*3600)
+    off_time_res = off_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    node.content=(off_time_res)
+
+    node
+  end
+
   def save_in_place
     @log.fatal "Invalid operation! TO REMOVE"
     fd = IO.sysopen "kk", "w"
@@ -84,35 +110,34 @@ class Gpx
     iostream.close
   end
 
-  def get_gpx_type
+  def gpx_type
     return @gpx_type unless @type==nil
     @gpx_type=trk_comment_name
 
     @gpx_type
   end
 
-  def get_gpx_time
+  def gpx_time
     return @gpx_date unless @type==nil
     @gpx_date=trk_comment_time
 
     @gpx_date
   end
 
-  def get_gpx_timestamp
+  def gpx_timestamp
     return @gpx_timestamp unless @gpx_timestamp==nil
     @gpx_timestamp=trk_xml_time
 
     @gpx_timestamp
   end
 
-  def get_gpx_time_offset_hours
-    date_gpx = get_gpx_time
-    xml_time = get_gpx_timestamp
+  def gpx_time_offset_hours
+    date_gpx = gpx_time
+    xml_time = gpx_timestamp
     @log.debug "Date_gpx #{date_gpx}"
     @log.debug "Xml_time #{xml_time}"
 
-    diff_hours = ((xml_time - date_gpx)/3600).round
-    @log.debug "Diff between \n\t\t\t\t#{xml_time} and \n\t\t\t\t#{date_gpx} is #{diff_hours} hours"
+    ((xml_time - date_gpx)/3600).round
   end
 private
   def trk_comment_name

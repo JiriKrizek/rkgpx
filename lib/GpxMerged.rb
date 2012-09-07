@@ -29,11 +29,17 @@ class GpxMerged
           begin
             gpx.fix_trkseg
           rescue XmlParseError => e
-            @log.warn "Fixed trkseg for file '#{gpx.filename}' with error #{e.message}"
+            @log.warn "trkseg for file '#{gpx.filename}' not fixed with error #{e.message}"
             return
           end
 
-          @log.debug gpx.get_gpx_type
+          @log.debug "Parsed file attributes: "
+          @log.debug "\t\tType:   '#{gpx.gpx_type}'"
+          @log.debug "\t\tTime:   '#{gpx.gpx_time}'"
+          @log.debug "\t\tOffset: '#{gpx.gpx_time_offset_hours}' hours"
+
+          @log.debug "Starting fix_timestamps:"
+          gpx.fix_timestamps
 
           #dont save for now TODO
           #gpx.save_in_place
@@ -44,10 +50,12 @@ class GpxMerged
         @log.debug "=== File #{gpx.filename} processed"
       }
 
-      @gpx_output.sort_by!(&:get_gpx_date)
+      @gpx_output.sort_by!(&:gpx_time)
 
-      @gpx_output.each { |g|
-        @log.debug "#{g.filename}: #{g.get_gpx_date}"
+      @gpx_output.each { |gpx|
+        @log.debug "#{gpx.filename}: #{gpx.gpx_time}"
+        gpx.gpx_time_offset_hours
+
       }
     end
 end
