@@ -1,4 +1,6 @@
 require 'nokogiri'
+require 'time'
+require 'date'
 require_relative 'XmlParseError'
 
 class Gpx
@@ -49,7 +51,7 @@ class Gpx
       end
 
       # Close trkseg tag before </trk>
-      if in_trk_seg && tag =~ /<\/trk>/ 
+      if in_trk_seg && tag =~ /<\/trk>/
         output+="</trkseg>\n"
       end
 
@@ -97,13 +99,36 @@ class Gpx
 private
   def trk_name
     txt = @xml_doc.xpath("/g:gpx/g:trk/g:name/text()", "g" => "http://www.topografix.com/GPX/1/1").to_s
+    trk_time = @xml_doc.xpath("/g:gpx/g:trk/g:time/text()", "g" => "http://www.topografix.com/GPX/1/1").to_s
+
+    xml_time = Time.parse(trk_time)
+    #@gpx_date = Date.strptime(time.strip, '%-m/%-d/%y')
+    @log.debug "XML time #{xml_time}"
+    #@log.debug "XML TIME #{xml_time}"
+
 
     txt.scan(/\<\!\[CDATA\[([a-zA-Z]*)\w*(.*)\]\]>/) do |type, time|
       @gpx_type = type
-      @log.debug "GPX type: #{@gpx_type}"
-      @gpx_date = time
-      @log.debug "GPX date: #{@gpx_date}"
+      @log.debug "GPX type: '#{@gpx_type}'"
+
+      date_gpx=convert_timestr_to_time(time)
+
+
+      @log.debug "GPX date #{date_gpx}"
+      @log.debug "Diff between #{xml_time} and #{date_gpx}"
+      diff_hours = ((xml_time - date_gpx)/3600).round
+
+      #@gpx_date =
+      @log.debug "Offset: #{diff_hours.round}"
+
     end
+  end
+
+  def convert_timestr_to_time(time)
+    time.strip!
+    time += " UTC"
+
+    Time.parse(DateTime.strptime(time, '%m/%d/%y %I:%M %P %Z').to_s).utc
   end
 
 
