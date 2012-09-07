@@ -5,6 +5,7 @@ require_relative 'XmlParseError'
 
 class Gpx
   attr_reader :contents, :filename, :xml_doc
+  GPX_MAPPING={"g" => "http://www.topografix.com/GPX/1/1"}
 
   def initialize(filename, logger)
     @log = logger
@@ -85,43 +86,58 @@ class Gpx
 
   def get_gpx_type
     return @gpx_type unless @type==nil
-    trk_name
+    @gpx_type=trk_comment_name
 
     @gpx_type
   end
 
-  def get_gpx_date
+  def get_gpx_time
     return @gpx_date unless @type==nil
-    trk_name
+    @gpx_date=trk_comment_time
 
     @gpx_date
   end
+
+  def get_gpx_timestamp
+    return @gpx_timestamp unless @gpx_timestamp==nil
+    @gpx_timestamp=trk_xml_time
+
+    @gpx_timestamp
+  end
+
+  def get_gpx_time_offset_hours
+    date_gpx = get_gpx_time
+    xml_time = get_gpx_timestamp
+    @log.debug "Date_gpx #{date_gpx}"
+    @log.debug "Xml_time #{xml_time}"
+
+    diff_hours = ((xml_time - date_gpx)/3600).round
+    @log.debug "Diff between \n\t\t\t\t#{xml_time} and \n\t\t\t\t#{date_gpx} is #{diff_hours} hours"
+  end
 private
-  def trk_name
-    txt = @xml_doc.xpath("/g:gpx/g:trk/g:name/text()", "g" => "http://www.topografix.com/GPX/1/1").to_s
-    trk_time = @xml_doc.xpath("/g:gpx/g:trk/g:time/text()", "g" => "http://www.topografix.com/GPX/1/1").to_s
+  def trk_comment_name
+    txt = @xml_doc.xpath("/g:gpx/g:trk/g:name/text()", GPX_MAPPING).to_s
 
-    xml_time = Time.parse(trk_time)
-    #@gpx_date = Date.strptime(time.strip, '%-m/%-d/%y')
+    type=txt.slice(/\<\!\[CDATA\[([a-zA-Z]*)\w*.*\]\]>/, 1)
+    #@log.debug "GPX type: '#{type}'"
+    type
+  end
+
+  def trk_comment_time
+    txt = @xml_doc.xpath("/g:gpx/g:trk/g:name/text()", GPX_MAPPING).to_s
+
+    time = txt.slice(/\<\!\[CDATA\[[a-zA-Z]*\w*(.*)\]\]>/, 1)
+    date_gpx=convert_timestr_to_time(time)
+
+    date_gpx
+  end
+
+  def trk_xml_time
+    trktime = @xml_doc.xpath("/g:gpx/g:trk/g:time/text()", GPX_MAPPING).to_s
+
+    xml_time = Time.parse(trktime)
     @log.debug "XML time #{xml_time}"
-    #@log.debug "XML TIME #{xml_time}"
-
-
-    txt.scan(/\<\!\[CDATA\[([a-zA-Z]*)\w*(.*)\]\]>/) do |type, time|
-      @gpx_type = type
-      @log.debug "GPX type: '#{@gpx_type}'"
-
-      date_gpx=convert_timestr_to_time(time)
-
-
-      @log.debug "GPX date #{date_gpx}"
-      @log.debug "Diff between #{xml_time} and #{date_gpx}"
-      diff_hours = ((xml_time - date_gpx)/3600).round
-
-      #@gpx_date =
-      @log.debug "Offset: #{diff_hours.round}"
-
-    end
+    xml_time
   end
 
   def convert_timestr_to_time(time)
