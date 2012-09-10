@@ -7,7 +7,7 @@ require_relative "GpxMerged"
 log = RkGpxLogger.new(STDOUT)
 
 # Parse commandline arguments and prepare output directory
-cmd = Commandline.new(ARGV)
+cmd = Commandline.new(ARGV, log)
 cmd.parse
 log.debug cmd.to_s
 

@@ -1,9 +1,14 @@
-require_relative "../lib/commandline.rb"
+require_relative "../lib/commandline"
+require_relative "../lib/RkGpxLogger"
 require "test/unit"
 require "fileutils"
 
 # Test command line arguments behaviour
 class TestCommandLine < Test::Unit::TestCase
+  def setup
+    @log = RkGpxLogger.new(STDOUT)
+  end
+
   # These arguments should result in exit with 1 exit status
   @@test_exit=[
       "--help",
@@ -29,7 +34,7 @@ class TestCommandLine < Test::Unit::TestCase
   def test_help_exit_raises
     @@test_exit.each { |a|
       assert_raise(SystemExit, "SystemExit expected for \"#{a}\"") {
-        Commandline.new(a.split(' ')).parse
+        Commandline.new(a.split(' '), @log).parse
       }
     }
   end
@@ -37,7 +42,7 @@ class TestCommandLine < Test::Unit::TestCase
   def test_version_exit_raises
     @@test_version.each { |a|
       assert_raise(SystemExit, "SystemExit expected for \"#{a}\"") {
-        Commandline.new(a.split(' ')).parse
+        Commandline.new(a.split(' '), @log).parse
       }
     }
   end
@@ -45,7 +50,7 @@ class TestCommandLine < Test::Unit::TestCase
   def test_help_exit_status
     @@test_exit.each { |a|
       begin
-        Commandline.new([a]).parse
+        Commandline.new([a], @log).parse
       rescue SystemExit => e
         assert e.status == 1
       end
@@ -55,7 +60,7 @@ class TestCommandLine < Test::Unit::TestCase
   def test_version_exit_status
     @@test_version.each { |a|
       begin
-        Commandline.new([a]).parse
+        Commandline.new([a], @log).parse
       rescue SystemExit => e
         assert e.status == 2
       end
@@ -78,7 +83,7 @@ class TestCommandLine < Test::Unit::TestCase
     }
 
     test_input.each { |key, value|
-      cmd=Commandline.new(key.split(' '))
+      cmd=Commandline.new(key.split(' '), @log)
       cmd.parse
       assert_equal(cmd.to_s, value)
     }

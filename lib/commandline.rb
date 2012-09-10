@@ -3,8 +3,9 @@ class Commandline
   attr_reader :edit_in_place, :output_dir, :files
 
   public
-    def initialize(given_arguments)
+    def initialize(given_arguments, log)
       @arguments = given_arguments
+      @log = log
 
       @edit_in_place=false
       @expecting_dir=false
@@ -153,7 +154,7 @@ class Commandline
       begin
         Dir.mkdir(dir)
       rescue
-        # do nothing
+        @log.warn "Could not create directory '#{dir}'"
       end
     end
 end
