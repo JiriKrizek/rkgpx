@@ -2,6 +2,7 @@ require 'nokogiri'
 require 'time'
 require 'date'
 require_relative 'XmlParseError'
+require_relative 'GeoPoint'
 
 class Gpx
   attr_reader :contents, :filename, :xml_doc
@@ -89,7 +90,6 @@ class Gpx
   end
 
   def fix_timestamp(node, offset)
-    p node.class
     raise ArgumentError.new("Node must be Nokogiri::XML::Text") unless node.kind_of? Nokogiri::XML::Text
     raise ArgumentError.new("Offset must be number between 0-24") unless (offset>=0 && offset<=24)
 
