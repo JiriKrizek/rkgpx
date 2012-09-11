@@ -89,21 +89,18 @@ class Gpx
     }
   end
 
-  def get_trkpt_first
-    first = @xml_doc.xpath("(/g:gpx/g:trk/g:trkseg/g:trkpt)[1]", GPX_MAPPING)
-    lat = first.attribute("lat").text.to_f
-    lon = first.attribute("lon").text.to_f
+  def trkpt_first
+    xpath = "(/g:gpx/g:trk/g:trkseg/g:trkpt)[1]"
+    nodeset = @xml_doc.xpath(xpath, GPX_MAPPING)
 
-    GeoPoint.new(lat, lon)
+    trkpt_from_nodeset(nodeset)
   end
 
-  def get_trkpt_last
-    last = @xml_doc.xpath("(/g:gpx/g:trk/g:trkseg/g:trkpt)[last()]", GPX_MAPPING)
+  def trkpt_last
+    xpath = "(/g:gpx/g:trk/g:trkseg/g:trkpt)[last()]"
+    nodeset = @xml_doc.xpath(xpath, GPX_MAPPING)
 
-    lat = last.attribute("lat").text.to_f
-    lon = last.attribute("lon").text.to_f
-
-    GeoPoint.new(lat, lon)
+    trkpt_from_nodeset(nodeset)
   end
 
   def fix_timestamp(node, offset)
@@ -189,5 +186,13 @@ private
     Time.parse(DateTime.strptime(time, '%m/%d/%y %I:%M %P %Z').to_s).utc
   end
 
+  def trkpt_from_nodeset(nodeset)
+    raise ArgumentError.new("Node must be Nokogiri::XML::NodeSet") unless nodeset.kind_of? Nokogiri::XML::NodeSet
+
+    lat = nodeset.attribute("lat").text.to_f
+    lon = nodeset.attribute("lon").text.to_f
+
+    GeoPoint.new(lat, lon)
+  end
 
 end
