@@ -1,6 +1,6 @@
 # Parse commandline arguments and prepare files.
 class Commandline
-  attr_reader :edit_in_place, :output_dir, :files
+  attr_reader :edit_in_place, :output_dir, :files, :threshold
 
   public
     def initialize(given_arguments, log)
@@ -9,7 +9,9 @@ class Commandline
 
       @edit_in_place=false
       @expecting_dir=false
+      @expecting_threshold=false
       @output_dir=nil
+      @threshold=30.0
 
       @files = []
 
@@ -21,6 +23,7 @@ class Commandline
       object_status+="files.count: #{@files.count}; "
       object_status+="output_dir: #{@output_dir}; "
       object_status+="edit_in_place: #{@edit_in_place}; "
+      object_status+="threshold: #{threshold}; "
     end
 
     def parse
@@ -86,6 +89,16 @@ class Commandline
         end
       end
 
+      # Argument threshold
+      if argument.eql?("t")
+        if @expecting_threshold==false
+          @expecting_threshold=true
+        else
+          puts "Argument threshold expected after -t switch\n"
+          print_help
+        end
+      end
+
       # Arguments -H, -h, --help, -help...
       if argument =~ /^-*h+(elp)*$/i
         print_help
@@ -100,6 +113,17 @@ class Commandline
         @expecting_dir=false
       else
         @files << arg unless arg.empty?
+      end
+
+      if @expecting_threshold
+        begin
+          @threshold = Float(arg)
+        rescue
+          print_help
+        ensure
+          @expecting_threshold=false
+        end
+
       end
     end
 

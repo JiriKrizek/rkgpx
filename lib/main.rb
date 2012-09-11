@@ -12,4 +12,5 @@ cmd.parse
 log.debug cmd.to_s
 
 
-gpx_merged = GpxMerged.new(cmd.files, log, :in_place => cmd.edit_in_place, :output_dir => cmd.output_dir)
+gpx_merged = GpxMerged.new(cmd.files, log, cmd.threshold, :in_place => cmd.edit_in_place, 
+                           :output_dir => cmd.output_dir)

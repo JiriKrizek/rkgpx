@@ -22,7 +22,8 @@ class TestCommandLine < Test::Unit::TestCase
       "kk -o kk -i",
       "kk -i -o kk",
       "kk -i -i",
-      "kk -o"
+      "kk -o",
+      "kk -o -t a"
     ]
 
   # These arguments should result in exit with 2 exit status (version)
@@ -74,12 +75,12 @@ class TestCommandLine < Test::Unit::TestCase
     arr.each { |f| FileUtils.touch(f) }
 
     test_input = {
-      "kk aa bb cc" => 'Arguments: kk aa bb cc; files.count: 4; output_dir: ; edit_in_place: false; ',
-      "kk aa bb" => 'Arguments: kk aa bb; files.count: 3; output_dir: ; edit_in_place: false; ',
-      "-i kk aa bb" => 'Arguments: -i kk aa bb; files.count: 3; output_dir: ; edit_in_place: true; ',
-      "-o kk aa bb" => 'Arguments: -o kk aa bb; files.count: 2; output_dir: kk; edit_in_place: false; ',
-      "-he kk" => 'Arguments: -he kk; files.count: 1; output_dir: ; edit_in_place: false; ',
-      "-ehelp kk" => 'Arguments: -ehelp kk; files.count: 1; output_dir: ; edit_in_place: false; ',
+      "kk aa bb cc" => 'Arguments: kk aa bb cc; files.count: 4; output_dir: ; edit_in_place: false; threshold: 30.0; ',
+      "kk aa bb" => 'Arguments: kk aa bb; files.count: 3; output_dir: ; edit_in_place: false; threshold: 30.0; ',
+      "-i kk aa bb" => 'Arguments: -i kk aa bb; files.count: 3; output_dir: ; edit_in_place: true; threshold: 30.0; ',
+      "-o kk aa bb" => 'Arguments: -o kk aa bb; files.count: 2; output_dir: kk; edit_in_place: false; threshold: 30.0; ',
+      "-he kk" => 'Arguments: -he kk; files.count: 1; output_dir: ; edit_in_place: false; threshold: 30.0; ',
+      "-ehelp kk -t 20" => 'Arguments: -ehelp kk -t 20; files.count: 1; output_dir: ; edit_in_place: false; threshold: 20.0; ',
     }
 
     test_input.each { |key, value|

@@ -89,6 +89,23 @@ class Gpx
     }
   end
 
+  def get_trkpt_first
+    first = @xml_doc.xpath("(/g:gpx/g:trk/g:trkseg/g:trkpt)[1]", GPX_MAPPING)
+    lat = first.attribute("lat").text.to_f
+    lon = first.attribute("lon").text.to_f
+
+    GeoPoint.new(lat, lon)
+  end
+
+  def get_trkpt_last
+    last = @xml_doc.xpath("(/g:gpx/g:trk/g:trkseg/g:trkpt)[last()]", GPX_MAPPING)
+
+    lat = last.attribute("lat").text.to_f
+    lon = last.attribute("lon").text.to_f
+
+    GeoPoint.new(lat, lon)
+  end
+
   def fix_timestamp(node, offset)
     raise ArgumentError.new("Node must be Nokogiri::XML::Text") unless node.kind_of? Nokogiri::XML::Text
     raise ArgumentError.new("Offset must be number between 0-24") unless (offset>=0 && offset<=24)
