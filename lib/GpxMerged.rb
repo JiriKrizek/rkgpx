@@ -21,7 +21,7 @@ class GpxMerged
       raise ArgumentError.new("Either option :output_dir or option :in_place must be provided")
     end
 
-    @gpx_output=[]
+    @hash=Hash.new
 
     @threshold = threshold
     @files=files
@@ -50,16 +50,30 @@ class GpxMerged
       else
         log.info "File #{file} is not readable or does not exist. Skipping."
       end
-      @gpx_output << gpx
+      unless @hash.has_key?(gpx.gpx_time.to_s)
+        @hash[gpx.gpx_time.to_s] = gpx
+      else
+        @log.warn "GPX file with start time #{gpx.gpx_time.to_s} already defined, ignoring."
+      end
       @log.debug "=== File #{gpx.filename} processed"
     }
     @log.debug "Finished processing of individual gpx files."
 
+    @gpx_output = Array.new
+    @hash.each { |key, value|
+      @gpx_output << value
+    }
+
+    @gpx_output.each {|g|
+      g.filename
+    }
 
     @gpx_output.sort_by!(&:gpx_time)
 
     @log.debug "GPX files sorted."
 
+    activities = Array.new
+    activities << @gpx_output[0] unless @gpx_output.empty?
 
     @gpx_output.each_with_index { |gpx, index|
       @log.debug "#{gpx.filename}: #{gpx.gpx_time}\t[#{gpx.gpx_type}]  [#{index}]"
@@ -67,15 +81,19 @@ class GpxMerged
       if ((index-1) >= 0)
         gpx_prev = @gpx_output[index-1]
 
-        first =       gpx.get_trkpt_first
-        last  =  gpx_prev.get_trkpt_last
+        first =       gpx.trkpt_first
+        last  =  gpx_prev.trkpt_last
 
         @log.debug "Distance between #{gpx.filename}.first and #{@gpx_output[index-1].filename}.last is #{distance(first, last)["m"]} meters"
         dst = distance(first, last)["m"].round(2)
         if dst > @threshold
           @log.warn "Distance #{dst} meters is bigger than defined threshold (#{@threshold} meters). Consider change threshold using switch '-t number'"
         else
-          @log.debug "Distance #{dst} m <= threshold #{@threshold} m"
+          activities << gpx
+          @log.debug "Distance #{dst} m <= threshold #{@threshold} m, adding activity #{gpx.filename}"
+          activities.each { |a|
+            @log.debug "\t\t#{a.filename}"
+          }
         end
       end
     }

@@ -105,7 +105,7 @@ class Gpx
 
   def fix_timestamp(node, offset)
     raise ArgumentError.new("Node must be Nokogiri::XML::Text") unless node.kind_of? Nokogiri::XML::Text
-    raise ArgumentError.new("Offset must be number between 0-24") unless (offset>=0 && offset<=24)
+    raise ArgumentError.new("Offset must be number between 0-24") unless (offset>=-24 && offset<=24)
 
     time = node.content+" UTC"
     off_time = Time.parse(time) - (offset*3600)
