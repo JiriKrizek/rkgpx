@@ -4,7 +4,9 @@ require_relative "gpx"
 require_relative "GpxMerged"
 
 # Enable logging
-log = RkGpxLogger.new(STDOUT)
+LOGFILE="logfile.txt"
+
+log = RkGpxLogger.new(LOGFILE)
 
 # Parse commandline arguments and prepare output directory
 cmd = Commandline.new(ARGV, log)
