@@ -64,7 +64,9 @@ class Gpx
     output += "</gpx>" unless output.split("\n").last =~ /.*<\/gpx>\s*/
 
     # Tidy XML output
-    doc = Nokogiri::XML(output)
+    doc = Nokogiri::XML(output) do |config|
+      config.default_xml.noblanks
+    end
 
     @contents = doc.to_xml
 
