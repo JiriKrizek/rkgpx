@@ -46,6 +46,13 @@ class GpxMerged
 
         @log.debug "Starting fix_timestamps:"
         gpx.fix_timestamps
+
+        # Save file if in_place enabled
+        if @in_place
+          @log.debug "Inplace enabled. Saving file."
+
+          save_in_place(gpx)
+        end
       else
         log.info "File #{file} is not readable or does not exist. Skipping."
       end
@@ -148,5 +155,13 @@ class GpxMerged
     }
 
     File.open(filename, 'w') { |f| f.write(output_str) }
+  end
+
+  def save_in_place(gpx)
+    raise ArgumentError.new("save_in_place(gpx): gpx must be kind_of Gpx object") unless gpx.kind_of? Gpx
+    filename=gpx.filename
+    @log.debug "Saving file '#{filename}'' in place"
+
+    File.open(filename, 'w') { |f| f.write(gpx.xml_doc.to_xml(:indent => 2))}
   end
 end
