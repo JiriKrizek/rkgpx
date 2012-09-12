@@ -107,8 +107,10 @@ class Gpx
     raise ArgumentError.new("Node must be Nokogiri::XML::Text") unless node.kind_of? Nokogiri::XML::Text
     raise ArgumentError.new("Offset must be number between 0-24") unless (offset>=-24 && offset<=24)
 
+    local_offset = Time.new.getlocal.utc_offset
+
     time = node.content+" UTC"
-    off_time = Time.parse(time) - (offset*3600)
+    off_time = Time.parse(time) - (offset*3600) - local_offset
     off_time_res = off_time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     node.content=(off_time_res)
