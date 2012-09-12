@@ -157,6 +157,15 @@ class Gpx
 
     ((xml_time - date_gpx)/3600).round
   end
+
+  def gpx_all_trkseg
+    @xml_doc.remove_namespaces!
+    @xml_doc.xpath("/gpx/trk/trkseg")
+  end
+
+  def gpx_ns_all_trkseg
+    @xml_doc.xpath("/g:gpx/g:trk/g:trkseg[last()]", GPX_MAPPING)
+  end
 private
   def trk_comment_name
     txt = @xml_doc.xpath("/g:gpx/g:trk/g:name/text()", GPX_MAPPING).to_s
