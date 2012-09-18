@@ -5,7 +5,7 @@ class GpxMerged
   include Gps
 
   attr_accessor :log
-  attr_reader :in_place, :dir, :threshold
+  attr_reader :in_place, :merge, :threshold
 
   def initialize(files, logger, threshold, options={})
     @log = logger
@@ -13,9 +13,9 @@ class GpxMerged
     if options.has_key?(:in_place) && options[:in_place]
       @log.debug "Edit in place"
       @in_place = options[:in_place]
-    elsif options.has_key?(:output_dir) && options[:output_dir]
-      @log.debug "Save output to dir #{@dir}"
-      @dir = options[:output_dir]
+    elsif options.has_key?(:merge) && options[:merge]
+      @log.debug "Merge"
+      @merge = options[:merge]
     else
       @log.debug "Raised ArgumentError exception"
       raise ArgumentError.new("Either option :output_dir or option :in_place must be provided")
@@ -68,48 +68,54 @@ class GpxMerged
     }
     @log.debug "Finished processing of individual gpx files."
 
-    @gpx_output = sorted_uniq_gpx(hash)
+    if @merge
+      @log.debug "starting merge"
+      @gpx_output = sorted_uniq_gpx(hash)
 
-    activities = []
-    activities << @gpx_output[0] unless @gpx_output.empty?
+      activities = []
+      activities << @gpx_output[0] unless @gpx_output.empty?
 
-    @gpx_output.each_with_index { |gpx, index|
-      @log.debug "#{gpx.filename}: #{gpx.gpx_time}\t[#{gpx.gpx_type}]  [#{index}]"
+      @gpx_output.each_with_index { |gpx, index|
+        @log.debug "#{gpx.filename}: #{gpx.gpx_time}\t[#{gpx.gpx_type}]  [#{index}]"
 
-      if ((index-1) >= 0)
-        gpx_prev = @gpx_output[index-1]
+        if ((index-1) >= 0)
+          gpx_prev = @gpx_output[index-1]
 
-        first =       gpx.trkpt_first
-        last  =  gpx_prev.trkpt_last
+          first =       gpx.trkpt_first
+          last  =  gpx_prev.trkpt_last
 
-        @log.debug "Distance between #{gpx.filename}.first and #{@gpx_output[index-1].filename}.last is #{distance(first, last)["m"]} meters"
-        dst = distance(first, last)["m"].round(2)
-        if dst > @threshold
-          @log.warn "Distance #{dst} meters is bigger than defined threshold (#{@threshold} meters). Consider change threshold using switch '-t number'"
+          @log.debug "Distance between #{gpx.filename}.first and #{@gpx_output[index-1].filename}.last is #{distance(first, last)["m"]} meters"
+          dst = distance(first, last)["m"].round(2)
+          if dst > @threshold
+            @log.warn "Distance #{dst} meters is bigger than defined threshold (#{@threshold} meters). Consider change threshold using switch '-t number'"
 
-          # Merge and continue
-          xml_result_output = merge_gpx_files(activities)
+            # Merge and continue
+            xml_result_output = merge_gpx_files(activities)
 
-          # Save output to file
-          unless activities.empty?
-            save_to_file(xml_result_output, activities)
-            activities = []
+            # Save output to file
+            unless activities.empty?
+              save_to_file(xml_result_output, activities)
+              activities = []
+            else
+              @log.debug "Activities are empty (GpxMerged.rb)"
+            end
+
           else
-            @log.debug "Activities are empty (GpxMerged.rb)"
+            activities << gpx
+            @log.debug "Distance #{dst} m <= threshold #{@threshold} m, adding activity #{gpx.filename}"
           end
-
-        else
-          activities << gpx
-          @log.debug "Distance #{dst} m <= threshold #{@threshold} m, adding activity #{gpx.filename}"
         end
+      }
+
+      unless activities.empty?
+        @log.debug "Merging rest of activities"
+        @log.debug "Activities #{activities.size}"
+
+        xml_result_output = merge_gpx_files(activities)
+        @log.debug "Activities #{activities.size}"
+
+        save_to_file(xml_result_output, activities)
       end
-    }
-
-    unless activities.empty?
-      @log.debug "Merging rest of activities"
-      xml_result_output = merge_gpx_files(activities)
-
-      save_to_file(xml_result_output, activities)
     end
   end
 
@@ -117,15 +123,20 @@ class GpxMerged
   def merge_gpx_files(sorted_array)
     raise ArgumentError.new("Invalid argument #{sorted_array.class}") unless sorted_array.kind_of? Array
 
-    first = sorted_array.shift
+    first=sorted_array[0]
 
-    sorted_array.each { |a|
-      # Appends <trkseg> from next gpx after last <trkseg> in first file
-      first_trk=first.gpx_ns_all_trkseg
-      trkseg=a.gpx_all_trkseg
+    unless sorted_array.size==1
 
-      first_trk.after(trkseg)
-    }
+      first = sorted_array.shift
+
+      sorted_array.each { |a|
+        # Appends <trkseg> from next gpx after last <trkseg> in first file
+        first_trk=first.gpx_ns_all_trkseg
+        trkseg=a.gpx_all_trkseg
+
+        first_trk.after(trkseg)
+      }
+    end
 
     # Converts to XML and returns
     first.xml_doc.to_xml(:indent => 2)
