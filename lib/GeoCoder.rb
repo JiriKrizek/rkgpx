@@ -19,7 +19,10 @@ class GeoCoder
       return nil
     end
 
-    raise IOError.new("Error with downloading geodata from Google API") unless response.code=="200"
+    unless response.code=="200"
+      @log.debug "Response code != 200"
+      return nil
+    end
 
     doc = Nokogiri::XML(response.body) do |config|
       config.default_xml.noblanks

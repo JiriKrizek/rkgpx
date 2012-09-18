@@ -4,7 +4,7 @@ require_relative "gpx"
 require_relative "GpxMerged"
 
 # Enable logging
-LOGFILE="logs/logfile.txt"
+LOGFILE="logfile.txt"
 
 log = RkGpxLogger.new(LOGFILE, Logger::DEBUG)
 
