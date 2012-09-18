@@ -1,5 +1,6 @@
 require_relative '../lib/gpx'
-require_relative '../lib/haversine.rb'
+require_relative '../lib/haversine'
+require_relative '../lib/GeoCoder'
 
 class GpxMerged
   include Gps
@@ -11,10 +12,8 @@ class GpxMerged
     @log = logger
 
     if options.has_key?(:in_place) && options[:in_place]
-      @log.debug "Edit in place"
       @in_place = options[:in_place]
     elsif options.has_key?(:merge) && options[:merge]
-      @log.debug "Merge"
       @merge = options[:merge]
     else
       @log.debug "Raised ArgumentError exception"
@@ -29,7 +28,7 @@ class GpxMerged
     @files.each { |file|
       if File.readable?(file)
         gpx = Gpx.new(file, @log)
-        @log.debug "=== Processing file #{gpx.filename}"
+        @log.info "=== Processing file #{gpx.filename}"
 
         begin
           gpx.fix_trkseg
@@ -39,13 +38,18 @@ class GpxMerged
           next
         end
 
-        @log.debug "Parsed file attributes: "
-        @log.debug "\t\tType:   '#{gpx.gpx_type}'"
-        @log.debug "\t\tTime:   '#{gpx.gpx_time}'"
-        @log.debug "\t\tOffset: '#{gpx.gpx_time_offset_hours}' hours"
+        gc=GeoCoder.new(@log)
 
-        @log.debug "Starting fix_timestamps:"
+        @log.info "  Parsed file attributes: "
+        @log.info "\t\tType:   '#{gpx.gpx_type}'"
+        @log.info "\t\tTime:   '#{gpx.gpx_time}'"
+        @log.info "\t\tOffset:  #{gpx.gpx_time_offset_hours} hours\n"
+        @log.info "\t\tStart:  '#{gc.address(gpx.trkpt_first)}' "#\t #{gpx.trkpt_first}"
+        @log.info "\t\tEnd:    '#{gc.address(gpx.trkpt_last)}' \n"#\t #{gpx.trkpt_last}"
+
+        @log.debug "  Starting fix_timestamps..."
         gpx.fix_timestamps
+        @log.debug "  Finished fix_timestamps."
 
         # Save file if in_place enabled
         if @in_place
@@ -66,10 +70,10 @@ class GpxMerged
 
       @log.debug "=== File #{gpx.filename} processed"
     }
-    @log.debug "Finished processing of individual gpx files."
+    @log.debug "Finished processing of individual gpx files.\n"
 
     if @merge
-      @log.debug "starting merge"
+      @log.debug "Starting merge"
       @gpx_output = sorted_uniq_gpx(hash)
 
       activities = []
@@ -84,7 +88,9 @@ class GpxMerged
           first =       gpx.trkpt_first
           last  =  gpx_prev.trkpt_last
 
-          @log.debug "Distance between #{gpx.filename}.first and #{@gpx_output[index-1].filename}.last is #{distance(first, last)["m"]} meters"
+          gc=GeoCoder.new(@log)
+
+          @log.info "Distance between \n\t\t\t\t    #{gpx.filename}.first (#{gc.address(first)})\n\t\t\t\tand #{@gpx_output[index-1].filename}.last (#{gc.address(last)}) \n\t\t\t\tis #{distance(first, last)["m"]} meters"
           dst = distance(first, last)["m"].round(2)
           if dst > @threshold
             @log.warn "Distance #{dst} meters is bigger than defined threshold (#{@threshold} meters). Consider change threshold using switch '-t number'"
