@@ -6,7 +6,7 @@ require "fileutils"
 # Test command line arguments behaviour
 class TestCommandLine < Test::Unit::TestCase
   def setup
-    @log = RkGpxLogger.new("logs/testlog.txt")
+    @log = RkGpxLogger.new("testlog.txt")
   end
 
   def teardown
