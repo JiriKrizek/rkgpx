@@ -12,7 +12,12 @@ class GeoCoder
   def address(geopoint)
     raise ArgumentError.new('Argument of "address" method must be GeoPoint') unless geopoint.kind_of? GeoPoint
 
-    response = Net::HTTP.get_response("maps.googleapis.com", "/maps/api/geocode/xml?latlng=#{geopoint.lat},#{geopoint.lon}&sensor=false")
+    begin
+      response = Net::HTTP.get_response("maps.googleapis.com", "/maps/api/geocode/xml?latlng=#{geopoint.lat},#{geopoint.lon}&sensor=false")
+    rescue SocketError => e
+      @log.debug "SocketError #{e.message}"
+      return nil
+    end
 
     raise IOError.new("Error with downloading geodata from Google API") unless response.code=="200"
 
