@@ -33,7 +33,7 @@ class GeoCoder
       raise XmlParseError.new(msg)
     end
 
-    xpath_street="/GeocodeResponse/result/address_component/type[contains(text(),'route')]/../long_name/text()[1]"
+    xpath_street="(/GeocodeResponse/result/address_component/long_name/text()[contains(../../type/text(),'route')])[1]"
     xpath_town="(/GeocodeResponse/result/address_component/long_name/text()[../../type[text() = 'locality']][../../type[text() = 'political']])[1]"
 
     street = doc.xpath(xpath_street).to_s
