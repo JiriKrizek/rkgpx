@@ -2,4 +2,5 @@ version.rb
 project.sublime-project
 project.sublime-workspace
 logs/**
+testlog.txt
 output*
