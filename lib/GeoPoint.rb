@@ -4,4 +4,8 @@ class GeoPoint
     @lat = lat
     @lon = lon
   end
+
+  def to_s
+    "#{lat},#{lon}"
+  end
 end
