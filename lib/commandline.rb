@@ -1,6 +1,6 @@
 # Parse commandline arguments and prepare files.
 class Commandline
-  attr_reader :edit_in_place, :output_dir, :files, :threshold
+  attr_reader :edit_in_place, :merge, :files, :threshold
 
   public
     def initialize(given_arguments, log)
@@ -8,9 +8,9 @@ class Commandline
       @log = log
 
       @edit_in_place=false
-      @expecting_dir=false
+      @merge=true
+      @mset=false
       @expecting_threshold=false
-      @output_dir=nil
       @threshold=30.0
 
       @files = []
@@ -21,7 +21,7 @@ class Commandline
     def to_s
       object_status="Arguments: "+@arguments.join(" ")+"; "
       object_status+="files.count: #{@files.count}; "
-      object_status+="output_dir: #{@output_dir}; "
+      object_status+="merge: #{@merge}; "
       object_status+="edit_in_place: #{@edit_in_place}; "
       object_status+="threshold: #{threshold}; "
     end
@@ -42,22 +42,7 @@ class Commandline
         print_help
       end
 
-      if (@expecting_dir == true && @output_dir.nil?)
-        puts "ERROR: Expecting argument for '-o' switch"
-        print_help
-      end
-
-      if @edit_in_place && @output_dir
-        puts "Could not use both '-i' and '-o' switch.\n"
-        print_help
-      end
-
       filter_invalid_files
-
-      # Create directory if not already exist
-      if @files.size
-        create_dir(@output_dir) if @output_dir
-      end
     end
 
   private
@@ -70,23 +55,17 @@ class Commandline
         print_version
       end
 
-      # In place
-      if argument.eql?("i")
-        if ( @edit_in_place || @expecting_dir )
-          print_help
-        else
-          @edit_in_place=true
-        end
+      # Argument output_dir
+      if argument.eql?("m")
+        @merge = true
+        @edit_in_place=false unless @mset==true
+        @mset=true
       end
 
-      # Argument output_dir
-      if argument.eql?("o")
-        if @expecting_dir==false
-          @expecting_dir=true
-        else
-          puts "Argument DIR expected after '-o' switch\n"
-          print_help
-        end
+      # In place
+      if argument.eql?("i")
+        @edit_in_place=true
+        @merge=false unless @mset==true
       end
 
       # Argument threshold
@@ -108,12 +87,7 @@ class Commandline
 
     # Parse argument
     def parse_arg(arg)
-      if @expecting_dir
-        @output_dir=arg
-        @expecting_dir=false
-      else
-        @files << arg unless arg.empty?
-      end
+      @files << arg unless arg.empty?
 
       if @expecting_threshold
         begin
@@ -130,11 +104,12 @@ class Commandline
     # Print usage and exits program
     def print_help
       puts "Usage:
-      \t./#{$PROGRAM_NAME} file.gpx [file2.gpx ...] -i|-o DIR|--help\n
+      \t./#{$PROGRAM_NAME} file.gpx [file2.gpx ...] -i|-m|--help\n
       \t\t#{$PROGRAM_NAME}\t - name of script
       \t\tfile.gpx file2.gpx\t - one or more file names to fix
       \t\t-i\t - fix files 'in place'
-      \t\t-o DIR\t - put output files to directory DIR
+      \t\t-m\t - merge to one gpx file, if tracks are continous (see -t switch) (default)
+      \t\t-t NUM - treshhold for merge tolerance in meters (default 30 meters)
       \t\t--help\t - print usage"
       exit 1
     end
@@ -172,13 +147,5 @@ class Commandline
         end
       end
       @files=real_files
-    end
-
-    def create_dir(dir)
-      begin
-        Dir.mkdir(dir)
-      rescue
-        @log.warn "Could not create directory '#{dir}'"
-      end
     end
 end

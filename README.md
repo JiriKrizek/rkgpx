@@ -6,14 +6,18 @@ and merge continous activities to one.
 
 ### Usage
 
-`ruby gpx.rb file.gpx [file2.gpx...] -i|-o DIR|--help [-t]`
+`ruby gpx.rb file.gpx [file2.gpx...] -i|-m|--help [-t]`
 
    * gpx.rb - name of script
    * file.gpx file2.gpx - one or more file names to fix
    * `-i` - fix files "in place"
-   * `-m` - merge fixed gpx files to one if tracks are continous (see `-t` switch)
+   * `-m` - merge fixed gpx files to one (if tracks are continous; see `-t` switch) (default)
    * `-t` - treshhold for merge tolerance in meters (default 30 meters)
       * `-t 10` - treshhold 10 meters
    * `--help`, `-h` - print usage
    * `--version`, `-V` - print version
 
+
+TODO - pokusit se pripojit k netu a vypsat informaci o zacatku a konci trasy
+	http://maps.googleapis.com/maps/api/geocode/json?latlng=50.160488000,13.985861000&sensor=false
+	https://developers.google.com/maps/documentation/geocoding/
