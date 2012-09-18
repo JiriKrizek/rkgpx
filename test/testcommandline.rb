@@ -6,7 +6,12 @@ require "fileutils"
 # Test command line arguments behaviour
 class TestCommandLine < Test::Unit::TestCase
   def setup
-    @log = RkGpxLogger.new(STDOUT)
+    @log = RkGpxLogger.new("logs/testlog.txt")
+  end
+
+  def teardown
+    Dir.rmdir("kk") if File.exists?("kk") && File.directory?("kk")
+    ["aa", "bb", "cc", "kk"].each { |f| File.delete(f) if File.exists?(f)  }
   end
 
   # These arguments should result in exit with 1 exit status
@@ -19,10 +24,6 @@ class TestCommandLine < Test::Unit::TestCase
       "kk --help",
       "kk --HELP",
       "kk --Help",
-      "kk -o kk -i",
-      "kk -i -o kk",
-      "kk -i -i",
-      "kk -o",
       "kk -o -t a"
     ]
 
@@ -75,22 +76,20 @@ class TestCommandLine < Test::Unit::TestCase
     arr.each { |f| FileUtils.touch(f) }
 
     test_input = {
-      "kk aa bb cc" => 'Arguments: kk aa bb cc; files.count: 4; output_dir: ; edit_in_place: false; threshold: 30.0; ',
-      "kk aa bb" => 'Arguments: kk aa bb; files.count: 3; output_dir: ; edit_in_place: false; threshold: 30.0; ',
-      "-i kk aa bb" => 'Arguments: -i kk aa bb; files.count: 3; output_dir: ; edit_in_place: true; threshold: 30.0; ',
-      "-o kk aa bb" => 'Arguments: -o kk aa bb; files.count: 2; output_dir: kk; edit_in_place: false; threshold: 30.0; ',
-      "-he kk" => 'Arguments: -he kk; files.count: 1; output_dir: ; edit_in_place: false; threshold: 30.0; ',
-      "-ehelp kk -t 20" => 'Arguments: -ehelp kk -t 20; files.count: 1; output_dir: ; edit_in_place: false; threshold: 20.0; ',
+      "kk aa bb cc" => 'Arguments: kk aa bb cc; files.count: 4; merge: true; edit_in_place: false; threshold: 30.0; ',
+      "kk aa bb" => 'Arguments: kk aa bb; files.count: 3; merge: true; edit_in_place: false; threshold: 30.0; ',
+      "-i kk aa bb" => 'Arguments: -i kk aa bb; files.count: 3; merge: false; edit_in_place: true; threshold: 30.0; ',
+      "-m aa bb" => 'Arguments: -m aa bb; files.count: 2; merge: true; edit_in_place: false; threshold: 30.0; ',
+      "-m -i aa bb" => 'Arguments: -m -i aa bb; files.count: 2; merge: true; edit_in_place: true; threshold: 30.0; ',
+      "-he kk" => 'Arguments: -he kk; files.count: 1; merge: true; edit_in_place: false; threshold: 30.0; ',
+      "-ehelp kk -t 20" => 'Arguments: -ehelp kk -t 20; files.count: 1; merge: true; edit_in_place: false; threshold: 20.0; ',
     }
 
     test_input.each { |key, value|
+      @log.debug key
       cmd=Commandline.new(key.split(' '), @log)
       cmd.parse
       assert_equal(cmd.to_s, value)
     }
-
-    # Delete dummy existing files
-    arr.each {|f| File.delete(f) }
-
   end
 end

@@ -4,7 +4,7 @@ require_relative "gpx"
 require_relative "GpxMerged"
 
 # Enable logging
-LOGFILE="logfile.txt"
+LOGFILE="logs/logfile.txt"
 
 log = RkGpxLogger.new(LOGFILE, Logger::DEBUG)
 
@@ -15,4 +15,4 @@ log.debug cmd.to_s
 
 
 gpx_merged = GpxMerged.new(cmd.files, log, cmd.threshold, :in_place => cmd.edit_in_place, 
-                           :output_dir => cmd.output_dir)
+                           :merge => cmd.merge)
