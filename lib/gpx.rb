@@ -17,7 +17,6 @@ class Gpx
       @filename = filename # TOREMOVE
 
       @contents = file.read
-      @log.debug("File #{filename} is readable, loading into string")
     else
       error = "File '#{filename}' is NOT READABLE."
 
@@ -75,7 +74,7 @@ class Gpx
       raise XmlParseError.new(msg)
     end
 
-    @log.info "Fixed trkseg for file '#{filename}'"
+    @log.info "  Fixed trkseg for file '#{filename}'"
     @xml_doc = doc
   end
 
@@ -152,8 +151,6 @@ class Gpx
   def gpx_time_offset_hours
     date_gpx = gpx_time
     xml_time = gpx_timestamp
-    @log.debug "Date_gpx #{date_gpx}"
-    @log.debug "Xml_time #{xml_time}"
 
     ((xml_time - date_gpx)/3600).round
   end
@@ -188,7 +185,6 @@ private
     trktime = @xml_doc.xpath("/g:gpx/g:trk/g:time/text()", GPX_MAPPING).to_s
 
     xml_time = Time.parse(trktime)
-    @log.debug "XML time #{xml_time}"
     xml_time
   end
 
