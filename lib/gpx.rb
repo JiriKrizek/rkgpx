@@ -191,7 +191,9 @@ private
   def convert_timestr_to_time(time)
     time.strip!
     time += " UTC"
+    time.sub!('Skiing ', ''); #TODO remove other options
 
+    p time
     Time.parse(DateTime.strptime(time, '%m/%d/%y %I:%M %P %Z').to_s).utc
   end
 
