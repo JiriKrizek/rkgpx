@@ -176,6 +176,7 @@ private
     txt = @xml_doc.xpath("/g:gpx/g:trk/g:name/text()", GPX_MAPPING).to_s
 
     time = txt.slice(/\<\!\[CDATA\[[a-zA-Z]*\w*(.*)\]\]>/, 1)
+    return nil if time==nil or time.empty?
     date_gpx=convert_timestr_to_time(time)
 
     date_gpx
@@ -184,8 +185,12 @@ private
   def trk_xml_time
     trktime = @xml_doc.xpath("/g:gpx/g:trk/g:time/text()", GPX_MAPPING).to_s
 
-    xml_time = Time.parse(trktime)
-    xml_time
+    puts "trktime: #{trktime}"
+    unless trktime.nil? or trktime.empty?
+      return Time.parse(trktime) 
+    else 
+      nil
+    end
   end
 
   def convert_timestr_to_time(time)

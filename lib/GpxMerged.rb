@@ -43,12 +43,12 @@ class GpxMerged
         @log.info "  Parsed file attributes: "
         @log.info "\t\tType:   '#{gpx.gpx_type}'"
         @log.info "\t\tTime:   '#{gpx.gpx_time}'"
-        @log.info "\t\tOffset:  #{gpx.gpx_time_offset_hours} hours\n"
+        #@log.info "\t\tOffset:  #{gpx.gpx_time_offset_hours} hours\n"
         @log.info "\t\tStart:  '#{gc.address(gpx.trkpt_first)}' "#\t #{gpx.trkpt_first}"
         @log.info "\t\tEnd:    '#{gc.address(gpx.trkpt_last)}' \n"#\t #{gpx.trkpt_last}"
 
         @log.debug "  Starting fix_timestamps..."
-        gpx.fix_timestamps
+#        gpx.fix_timestamps
         @log.debug "  Finished fix_timestamps."
 
         # Save file if in_place enabled
